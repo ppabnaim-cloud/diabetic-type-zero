@@ -6,6 +6,7 @@ import InfectionModule from "@/components/InfectionModule";
 import MetabolicModule from "@/components/MetabolicModule";
 import ProgressionModule from "@/components/ProgressionModule";
 import { Pill, cx } from "@/components/ui";
+import { loadCnn } from "@/lib/cnn";
 import type { ModuleId } from "@/lib/types";
 
 const TABS: { id: ModuleId; n: string; name: string; blurb: string; prefix: string }[] = [
@@ -39,9 +40,12 @@ const STATIONS = [
   { k: "d", label: "Result" },
 ];
 
+type ModelState = "loading" | "ready" | "failed";
+
 export default function Page() {
   const [accepted, setAccepted] = useState(false);
   const [tab, setTab] = useState<ModuleId>("metabolic");
+  const [model, setModel] = useState<ModelState>("loading");
 
   useEffect(() => {
     if (accepted) window.scrollTo({ top: 0 });
@@ -49,7 +53,22 @@ export default function Page() {
 
   const active = TABS.find((t) => t.id === tab)!;
 
-  if (!accepted) return <Disclaimer onAccept={() => setAccepted(true)} />;
+  /*
+   * Warm the backbone the moment the disclaimer is accepted. The ImageNet
+   * weights are about 14 MB; fetching them lazily on the first demo click
+   * means the first result of a session waits on the network, which on a
+   * congested venue connection is the worst possible moment. Starting here
+   * overlaps the download with the user choosing an image.
+   */
+  const accept = () => {
+    setAccepted(true);
+    loadCnn().then(
+      () => setModel("ready"),
+      () => setModel("failed")
+    );
+  };
+
+  if (!accepted) return <Disclaimer onAccept={accept} />;
 
   return (
     <div className="min-h-dvh pb-20">
@@ -64,6 +83,22 @@ export default function Page() {
               Image-based early detection across the diabetes course
             </p>
           </div>
+          <Pill
+            tone={model === "ready" ? "brand" : model === "failed" ? "neutral" : "neutral"}
+            className="hidden sm:inline-flex"
+          >
+            <span
+              className={cx(
+                "h-1.5 w-1.5 rounded-full",
+                model === "ready"
+                  ? "bg-brand-400"
+                  : model === "failed"
+                    ? "bg-fog-400"
+                    : "animate-pulse bg-amber-400"
+              )}
+            />
+            {model === "ready" ? "Model ready" : model === "failed" ? "Analyser only" : "Loading model"}
+          </Pill>
           <Pill tone="warn">Prototype · not for clinical use</Pill>
         </div>
 
