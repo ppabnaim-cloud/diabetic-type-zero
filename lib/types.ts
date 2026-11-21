@@ -91,6 +91,7 @@ export interface MetabolicFeatures {
   facialErythema: number;
   meanV: number;
   meanS: number;
+  skinFraction: number; // share of ROI that is skin at all
 }
 
 export type BodySite =

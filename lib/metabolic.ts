@@ -215,7 +215,19 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
   const vPlane = new Float32Array(n);
   const sPlane = new Float32Array(n);
   const rednessPlane = new Float32Array(n);
-  let yellowHits = 0,
+
+  /*
+   * Skin mask.
+   *
+   * A real clinical photograph is mostly not skin: there is hair, a drape, a
+   * ward background, shadow and blown highlight. Every statistic below is
+   * computed over skin pixels only. Without this, scalp hair alone supplies
+   * hundreds of dark blobs and a huge texture energy, and the module reports
+   * diabetic dermopathy on a photograph of somebody's neck.
+   */
+  const skin = new Uint8Array(n);
+  let skinN = 0,
+    yellowHits = 0,
     sumS = 0;
 
   for (let i = 0; i < n; i++) {
@@ -227,9 +239,24 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
     vPlane[i] = v;
     sPlane[i] = s;
     rednessPlane[i] = redness(r, g, b);
-    sumS += s;
-    if (hu >= 40 && hu <= 70 && s >= 0.24 && v >= 0.5) yellowHits++;
+
+    const warm = hu <= 58 || hu >= 328;
+    const isSkin = warm && s >= 0.07 && s <= 0.82 && v >= 0.16 && v <= 0.985 && r > b;
+    if (isSkin) {
+      skin[i] = 1;
+      skinN++;
+      sumS += s;
+      if (hu >= 40 && hu <= 70 && s >= 0.24 && v >= 0.5) yellowHits++;
+    }
   }
+
+  const skinFraction = skinN / n;
+  const denom = Math.max(1, skinN);
+  const masked = (plane: Float32Array) => {
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) if (skin[i]) out.push(plane[i]);
+    return out;
+  };
 
   /*
    * Pigmentation vs. shadow.
@@ -243,8 +270,9 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
    */
   const blurR = Math.max(3, Math.round(Math.min(rw, rh) * 0.06));
   const vBlur = boxBlur(vPlane, rw, rh, blurR);
-  const vLo = percentile(vBlur, 0.2);
-  const vHi = percentile(vBlur, 0.8);
+  const vBlurSkin = masked(vBlur);
+  const vLo = percentile(vBlurSkin, 0.2);
+  const vHi = percentile(vBlurSkin, 0.8);
   const shadingDrop = vHi > 0.02 ? clamp01((vHi - vLo) / vHi) : 0;
 
   let sDark = 0,
@@ -252,6 +280,7 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
     sLight = 0,
     nLight = 0;
   for (let i = 0; i < n; i++) {
+    if (!skin[i]) continue;
     if (vBlur[i] <= vLo) {
       sDark += sPlane[i];
       nDark++;
@@ -271,17 +300,19 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
 
   // Extent of the plaque: pixels that are both darker and more saturated than
   // this image's own median. Scale-free and independent of skin type.
-  const refS = nLight > 0 ? sLight / nLight : percentile(sPlane, 0.5);
+  const sSkin = masked(sPlane);
+  const refS = nLight > 0 ? sLight / nLight : percentile(sSkin, 0.5);
   let pigmented = 0;
-  for (let i = 0; i < n; i++) if (vBlur[i] < vHi * 0.93 && sPlane[i] > refS + 0.02) pigmented++;
-  const pigmentedFraction = pigmented / n;
+  for (let i = 0; i < n; i++)
+    if (skin[i] && vBlur[i] < vHi * 0.93 && sPlane[i] > refS + 0.02) pigmented++;
+  const pigmentedFraction = pigmented / denom;
 
   const grey = greyPlane(crop);
-  const velvetyTextureEnergy = textureEnergy(grey, rw, rh, 2);
+  const velvetyTextureEnergy = textureEnergy(grey, rw, rh, 2, skin);
 
-  const meanS = sumS / n;
+  const meanS = sumS / denom;
   let varS = 0;
-  for (let i = 0; i < n; i++) varS += (sPlane[i] - meanS) ** 2;
+  for (let i = 0; i < n; i++) if (skin[i]) varS += (sPlane[i] - meanS) ** 2;
 
   /*
    * Papules are of the order of 2 % of the frame across, an order of magnitude
@@ -289,14 +320,14 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
    * above the grain scale and the response must clear both an absolute floor
    * and 2.6 standard deviations of the image's own DoG response.
    */
-  const per10k = 10000 / n;
-  const bright = detectBlobs(grey, rw, rh, 4, 12, 0.022, 9, 1, 2.2);
-  const dark = detectBlobs(grey, rw, rh, 4, 13, 0.022, 10, -1, 2.2);
+  const per10k = 10000 / denom;
+  const bright = detectBlobs(grey, rw, rh, 4, 12, 0.022, 9, 1, 2.2, skin);
+  const dark = detectBlobs(grey, rw, rh, 4, 13, 0.022, 10, -1, 2.2, skin);
 
   // Telangiectasia proxy: fine-scale redness residual above a local baseline.
   const rBlur = boxBlur(rednessPlane, rw, rh, 4);
   let telHits = 0;
-  for (let i = 0; i < n; i++) if (rednessPlane[i] - rBlur[i] > 0.05) telHits++;
+  for (let i = 0; i < n; i++) if (skin[i] && rednessPlane[i] - rBlur[i] > 0.05) telHits++;
 
   /*
    * Erythema must be measured WITHIN the image, never against an absolute.
@@ -306,9 +337,8 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
    * inside the same ROI measures regional vasodilatation and is independent of
    * the patient's constitutive skin tone.
    */
-  const facialErythema = clamp01(
-    (percentile(rednessPlane, 0.9) - percentile(rednessPlane, 0.5)) / 0.09
-  );
+  const rSkin = masked(rednessPlane);
+  const facialErythema = clamp01((percentile(rSkin, 0.9) - percentile(rSkin, 0.5)) / 0.09);
 
   return {
     hyperpigmentationIndex,
@@ -316,15 +346,16 @@ export function extractMetabolicFeatures(d: ImageData, roi: Roi): MetabolicFeatu
     pigmentSaturationGain,
     pigmentedFraction,
     velvetyTextureEnergy,
-    colourVariance: Math.sqrt(varS / n),
+    colourVariance: Math.sqrt(varS / denom),
     papuleCount: bright.length,
     papuleDensity: bright.length * per10k,
-    yellowPlaqueFraction: yellowHits / n,
+    yellowPlaqueFraction: yellowHits / denom,
     telangiectasiaDensity: telHits / n,
     darkMaculeCount: dark.length * per10k,
     facialErythema,
-    meanV: percentile(vPlane, 0.5),
+    meanV: percentile(masked(vPlane), 0.5),
     meanS,
+    skinFraction,
   };
 }
 

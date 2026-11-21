@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fileToDataUrl, DEFAULT_ROI, FULL_ROI } from "@/lib/pipeline";
-import { type DemoSpec, renderDemo } from "@/lib/synth";
+import { type DemoSpec, demoUrl } from "@/lib/demos";
 import type { Roi } from "@/lib/types";
 import { Button, Note, Pill, cx } from "./ui";
 
@@ -115,30 +115,10 @@ export default function ImageStage({
   compact?: boolean;
 }) {
   const [cam, setCam] = useState(false);
-  const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [err, setErr] = useState<string | null>(null);
   const [drag, setDrag] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    const t = setTimeout(() => {
-      const out: Record<string, string> = {};
-      for (const d of demos) {
-        try {
-          out[d.id] = renderDemo(d.id, 128);
-        } catch {
-          /* ignore */
-        }
-      }
-      if (alive) setThumbs(out);
-    }, 0);
-    return () => {
-      alive = false;
-      clearTimeout(t);
-    };
-  }, [demos]);
 
   const pick = useCallback(
     async (f: File | null | undefined) => {
@@ -278,7 +258,7 @@ export default function ImageStage({
         <div className="grid place-items-center rounded-xl border border-dashed border-line bg-ink-900/40 px-4 py-8 text-center">
           <p className="text-sm text-fog-300">No image selected</p>
           <p className="mt-1 max-w-sm text-xs text-fog-400">
-            Take a photo, upload a file, or pick one of the synthetic demo images below.
+            Take a photo, upload a file, or pick one of the demo images below.
           </p>
         </div>
       )}
@@ -286,27 +266,30 @@ export default function ImageStage({
       <div>
         <div className="mb-2 flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-fog-400">Demo images</p>
-          <Pill>Synthetic · generated on this device</Pill>
+          <Pill>Real clinical photographs</Pill>
         </div>
+        {demos.length === 0 && (
+          <Note>
+            No demo images are loaded. Add photographs to <code className="text-fog-200">public/demo/</code>{" "}
+            and list them in <code className="text-fog-200">public/demo/manifest.json</code>. Capture and
+            upload work regardless.
+          </Note>
+        )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {demos.map((d) => (
             <button
               key={d.id}
               onClick={() => {
                 setErr(null);
-                onSrc(renderDemo(d.id, 448));
-                onRoi(DEFAULT_ROI);
+                onSrc(demoUrl(d));
+                onRoi(d.roi ?? DEFAULT_ROI);
                 onDemo?.(d);
               }}
               className="group overflow-hidden rounded-xl border border-line bg-ink-900/60 text-left transition-colors hover:border-brand-500/60"
             >
               <div className="aspect-square w-full overflow-hidden bg-ink-900">
-                {thumbs[d.id] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumbs[d.id]} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="h-full w-full animate-pulse bg-ink-700" />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={demoUrl(d)} alt="" loading="lazy" className="h-full w-full object-cover" />
               </div>
               <div className="px-2.5 py-2">
                 <p className="text-[11.5px] font-medium leading-tight text-fog-100 group-hover:text-brand-300">

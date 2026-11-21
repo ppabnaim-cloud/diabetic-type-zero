@@ -1,9 +1,9 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { BODY_SITES, SIGNS, metabolicVerdict, scoreSigns } from "@/lib/metabolic";
 import { DEFAULT_ROI } from "@/lib/pipeline";
-import { demosFor } from "@/lib/synth";
+import { type DemoSpec, demosFor } from "@/lib/demos";
 import type { BodySite, Roi } from "@/lib/types";
 import CnnPanel from "./CnnPanel";
 import ImageStage from "./ImageStage";
@@ -29,7 +29,14 @@ export default function MetabolicModule() {
   const [showFeat, setShowFeat] = useState(false);
 
   const { prepared, analysis, cnn, cnnRunning, preparing, error } = useAnalysis(src, roi, true);
-  const demos = useMemo(() => demosFor("metabolic"), []);
+  const [demos, setDemos] = useState<DemoSpec[]>([]);
+  useEffect(() => {
+    let alive = true;
+    demosFor("metabolic").then((d) => alive && setDemos(d));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const signs = useMemo(
     () => (analysis ? scoreSigns(analysis.feats, site) : []),
@@ -60,7 +67,7 @@ export default function MetabolicModule() {
       <Station
         letter="A"
         title="Station A — Image acquisition"
-        subtitle="Photograph the skin site, upload an existing image, or choose a synthetic demo"
+        subtitle="Photograph the skin site, upload an existing image, or choose a demo case"
         state={src ? "done" : "active"}
         id="m1-a"
       >
@@ -142,6 +149,14 @@ export default function MetabolicModule() {
                 </span>
               </label>
             </div>
+
+            {analysis.feats.skinFraction < 0.45 && (
+              <Note tone="warn">
+                Only {(analysis.feats.skinFraction * 100).toFixed(0)}% of the selected region is skin — the
+                rest is hair, drape or background, which is excluded from the analysis. Drag a tighter region
+                of interest over the lesion itself for a more reliable result.
+              </Note>
+            )}
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-3">

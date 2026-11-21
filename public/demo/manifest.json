@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "note": "Real clinical photographs. Drop a file into /public/demo and add an entry here — no code change is needed. An entry whose file is missing is skipped silently. 'roi' is the suggested region of interest as fractions of the image (x, y from the top-left); omit it to default to the central 72%.",
+  "images": [
+    {
+      "id": "m1-an-neck",
+      "module": "metabolic",
+      "file": "m1-acanthosis-neck.jpg",
+      "title": "Acanthosis nigricans — posterior neck",
+      "note": "Velvety hyperpigmented plaque with papillomatous texture",
+      "site": "neck",
+      "roi": { "x": 0.18, "y": 0.5, "w": 0.64, "h": 0.42 },
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m1-an-neck-2",
+      "module": "metabolic",
+      "file": "m1-acanthosis-neck-2.jpg",
+      "title": "Acanthosis nigricans — nape, lighter skin",
+      "note": "Brown velvety plaque with accentuated skin lines",
+      "site": "neck",
+      "roi": { "x": 0.2, "y": 0.35, "w": 0.6, "h": 0.45 },
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m1-an-axilla",
+      "module": "metabolic",
+      "file": "m1-acanthosis-axilla.jpg",
+      "title": "Acanthosis nigricans — axilla",
+      "note": "Velvety hyperpigmentation of the axillary fold",
+      "site": "axilla",
+      "roi": { "x": 0.22, "y": 0.3, "w": 0.52, "h": 0.45 },
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m1-tags-neck",
+      "module": "metabolic",
+      "file": "m1-skin-tags-neck.jpg",
+      "title": "Acrochordons — lateral neck",
+      "note": "Multiple pedunculated papules",
+      "site": "neck",
+      "roi": { "x": 0.25, "y": 0.42, "w": 0.6, "h": 0.42 },
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m1-normal",
+      "module": "metabolic",
+      "file": "m1-normal-skin.jpg",
+      "title": "Normal skin — negative control",
+      "note": "No Tier 1 features; use to demonstrate specificity",
+      "site": "neck",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m2-infected",
+      "module": "infection",
+      "file": "m2-dfu-infected.jpg",
+      "title": "Infected diabetic foot ulcer",
+      "note": "Purulent discharge with surrounding erythema",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m2-gangrene",
+      "module": "infection",
+      "file": "m2-dfu-gangrene.jpg",
+      "title": "Wet gangrene — forefoot",
+      "note": "Dusky, malodorous, limb-threatening appearance",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m2-clean",
+      "module": "infection",
+      "file": "m2-dfu-clean.jpg",
+      "title": "Non-infected ulcer — negative control",
+      "note": "Clean granulating bed, calm peri-wound skin",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m3-v1",
+      "module": "progression",
+      "slot": "A",
+      "pairId": "case-1",
+      "file": "m3-visit1.jpg",
+      "title": "Visit 1 — baseline",
+      "note": "Same ulcer, first photograph",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    },
+    {
+      "id": "m3-v2",
+      "module": "progression",
+      "slot": "B",
+      "pairId": "case-1",
+      "file": "m3-visit2.jpg",
+      "title": "Visit 2 — follow-up",
+      "note": "Same ulcer after treatment",
+      "credit": "Third-party clinical photograph — see CREDITS.md"
+    }
+  ]
+}

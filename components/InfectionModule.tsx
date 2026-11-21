@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { infectionVerdict } from "@/lib/assess";
 import { DEFAULT_ROI } from "@/lib/pipeline";
-import { demosFor } from "@/lib/synth";
+import { type DemoSpec, demosFor } from "@/lib/demos";
 import { TISSUE_COLOUR, TISSUE_LABEL } from "@/lib/tissue";
 import type { Roi } from "@/lib/types";
 import CnnPanel from "./CnnPanel";
@@ -34,7 +34,14 @@ export default function InfectionModule() {
   const [notes, setNotes] = useState("");
 
   const { prepared, analysis, cnn, cnnRunning, preparing, error } = useAnalysis(src, roi, false);
-  const demos = useMemo(() => demosFor("infection"), []);
+  const [demos, setDemos] = useState<DemoSpec[]>([]);
+  useEffect(() => {
+    let alive = true;
+    demosFor("infection").then((d) => alive && setDemos(d));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const verdict = useMemo(
     () => (analysis ? infectionVerdict(analysis.comp, analysis.peri) : null),

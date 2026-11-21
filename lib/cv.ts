@@ -107,12 +107,27 @@ export function boxBlur(src: Float32Array, w: number, h: number, r: number): Flo
   return out;
 }
 
-/** Mean absolute deviation from a blurred version — a cheap texture-energy measure. */
-export function textureEnergy(plane: Float32Array, w: number, h: number, r = 2): number {
+/**
+ * Mean absolute deviation from a blurred version — a cheap texture-energy
+ * measure. An optional mask restricts the average to pixels of interest, so
+ * that hair, drapes and background do not dominate the figure.
+ */
+export function textureEnergy(
+  plane: Float32Array,
+  w: number,
+  h: number,
+  r = 2,
+  mask?: Uint8Array
+): number {
   const blur = boxBlur(plane, w, h, r);
-  let s = 0;
-  for (let i = 0; i < plane.length; i++) s += Math.abs(plane[i] - blur[i]);
-  return s / plane.length;
+  let s = 0,
+    n = 0;
+  for (let i = 0; i < plane.length; i++) {
+    if (mask && !mask[i]) continue;
+    s += Math.abs(plane[i] - blur[i]);
+    n++;
+  }
+  return n ? s / n : 0;
 }
 
 /**
@@ -128,7 +143,8 @@ export function detectBlobs(
   thresh = 0.012,
   minSpacing = 4,
   polarity: 1 | -1 = 1,
-  adaptiveK = 0
+  adaptiveK = 0,
+  mask?: Uint8Array
 ): { x: number; y: number; strength: number }[] {
   const a = boxBlur(plane, w, h, rInner);
   const b = boxBlur(plane, w, h, rOuter);
@@ -152,6 +168,7 @@ export function detectBlobs(
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
       const i = y * w + x;
+      if (mask && !mask[i]) continue; // hair, drape and background are not papules
       const v = dog[i];
       if (v < thresh) continue;
       let isMax = true;

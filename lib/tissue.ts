@@ -57,10 +57,14 @@ function scoreClasses(r: number, g: number, b: number, out: Float32Array): void 
 
   // Background: desaturated-bright (drape, glove, paper), near-black void, or
   // any blue/cyan (surgical drape, denim) which is never viable tissue.
+  // The green band covers surgical drapes and chroma-key cloth. It starts
+  // above the yellow-green of purulence and requires brightness, so neither
+  // pus nor the dusky green of wet gangrene is swallowed by it.
   out[IDX.background] = Math.max(
     trap(s, 0, 0, 0.06, 0.17) * trap(v, 0.68, 0.8, 1, 1),
     trap(v, 0, 0, 0.045, 0.09),
-    hueTrap(h, 180, 196, 255, 272) * trap(s, 0.12, 0.26, 1, 1) * trap(v, 0.15, 0.25, 1, 1)
+    hueTrap(h, 180, 196, 255, 272) * trap(s, 0.12, 0.26, 1, 1) * trap(v, 0.15, 0.25, 1, 1),
+    hueTrap(h, 104, 124, 172, 186) * trap(s, 0.28, 0.42, 1, 1) * trap(v, 0.3, 0.42, 1, 1)
   );
 
   // Dry necrosis / eschar: dark, low-to-moderate saturation, warm-neutral hue.

@@ -145,29 +145,40 @@ dataset that a diagnostic head needs.**
 
 ## Demo images
 
-Every demo image is **procedurally generated in the browser from a fixed seed** and watermarked
-`SYNTHETIC DEMO — NOT A PATIENT IMAGE`. No patient photograph is bundled, fetched or stored.
+Demo images are **real clinical photographs**, served from `public/demo/` and
+described by `public/demo/manifest.json`, which the app fetches at runtime.
 
-The generators produce colourimetry and texture representative of each condition; the analyser
-then measures them independently, with no knowledge of which demo was chosen. Tissue
-proportions are allocated by inverting the empirical CDF of the generator's centrality field,
-so a demo specified as 44% purulent really does contain about that much.
+To add one: drop the file into `public/demo/` and add an entry to the manifest.
+No code change, no rebuild of application logic. An entry whose file is missing
+is skipped silently, so a half-populated manifest never produces a broken tile
+during a live demonstration. Each entry may carry a suggested `roi` so the
+region of interest opens over the lesion rather than the centre of the frame.
 
-Measured against the specifications, on the current build:
+Provenance, licensing and the no-identifiers rule are documented in
+[`public/demo/CREDITS.md`](public/demo/CREDITS.md). The images currently used
+are third-party clinical photographs taken from publicly accessible sources for
+a non-commercial hackathon demonstration; publicly accessible is not the same
+as licensed for redistribution, and they must be replaced before any wider
+release. Crop out faces, ears and ward backgrounds, and strip EXIF before
+committing.
 
-| Demo | Specified | Analyser reports |
-|------|-----------|------------------|
-| Infected DFU | 44% purulent | 47.3% purulent → *likely infected* |
-| Wet gangrene | 34% gangrene | 20.8% gangrene → *likely infected, grade 3* |
-| Clean DFU (control) | 84% granulation | 3% infection concern → *no evidence* |
-| Healing pair | granulation 26% → 76% | **+52.7 pp** → *good wound healing* |
-| Deteriorating pair | granulation 26% → 4% | **−18.8 pp** → *deterioration* |
-| Normal skin (control) | no features | **0%** composite, nothing detected |
+### Working on real photographs
 
-Synthetic images validate that the pipeline mechanics work. They say nothing about clinical
-accuracy, and no claim of clinical accuracy is made anywhere in this repository.
+Real clinical images contain a great deal that is not the patient, and the
+analyser is built to cope with it:
 
----
+- **Coloured drapes.** Blue and green surgical cloth is classified as
+  background. The green band begins above the yellow-green of purulence and
+  requires brightness, so neither pus nor the dusky green of wet gangrene is
+  swallowed by it.
+- **Hair, shadow and blown highlight.** Every metabolic feature is computed
+  over a skin mask only. Without it, scalp hair alone supplies hundreds of dark
+  blobs and a large texture energy, and the module reports diabetic dermopathy
+  on a photograph of somebody's neck. Station C warns when less than 45 % of
+  the selected region is skin.
+- **Skin type.** Erythema and pigmentation are measured within each image
+  rather than against fixed thresholds, so Fitzpatrick V–VI skin is not
+  systematically over-called.
 
 ## Privacy
 

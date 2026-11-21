@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { progressionVerdict } from "@/lib/assess";
 import { embeddingSimilarity } from "@/lib/cnn";
 import { DEFAULT_ROI } from "@/lib/pipeline";
-import { demosFor, renderDemo } from "@/lib/synth";
+import { type DemoSpec, demoUrl, demosFor } from "@/lib/demos";
 import { TISSUE_COLOUR, TISSUE_LABEL } from "@/lib/tissue";
 import type { Roi } from "@/lib/types";
 import CnnPanel from "./CnnPanel";
@@ -42,7 +42,14 @@ export default function ProgressionModule() {
   const A = useAnalysis(srcA, roiA, false);
   const B = useAnalysis(srcB, roiB, false);
 
-  const demos = useMemo(() => demosFor("progression"), []);
+  const [demos, setDemos] = useState<DemoSpec[]>([]);
+  useEffect(() => {
+    let alive = true;
+    demosFor("progression").then((d) => alive && setDemos(d));
+    return () => {
+      alive = false;
+    };
+  }, []);
   const demosA = useMemo(() => demos.filter((d) => d.slot === "A"), [demos]);
   const demosB = useMemo(() => demos.filter((d) => d.slot === "B"), [demos]);
 
@@ -67,11 +74,22 @@ export default function ProgressionModule() {
         ]
       : [];
 
-  const loadPair = (bId: string) => {
-    setSrcA(renderDemo("prog-t0", 448));
-    setSrcB(renderDemo(bId, 448));
-    setRoiA(DEFAULT_ROI);
-    setRoiB(DEFAULT_ROI);
+  const pairs = useMemo(() => {
+    const ids = Array.from(new Set(demos.map((d) => d.pairId).filter(Boolean))) as string[];
+    return ids
+      .map((id) => ({
+        id,
+        a: demos.find((d) => d.pairId === id && d.slot === "A"),
+        b: demos.find((d) => d.pairId === id && d.slot === "B"),
+      }))
+      .filter((p) => p.a && p.b);
+  }, [demos]);
+
+  const loadPair = (a: DemoSpec, b: DemoSpec) => {
+    setSrcA(demoUrl(a));
+    setSrcB(demoUrl(b));
+    setRoiA(a.roi ?? DEFAULT_ROI);
+    setRoiB(b.roi ?? DEFAULT_ROI);
   };
 
   const tone =
@@ -95,15 +113,16 @@ export default function ProgressionModule() {
         id="m3-a"
       >
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] text-fog-400">Quick demo pairs:</span>
-            <Button variant="ghost" onClick={() => loadPair("prog-t1")}>
-              Healing course
-            </Button>
-            <Button variant="ghost" onClick={() => loadPair("prog-bad-t1")}>
-              Deteriorating course
-            </Button>
-          </div>
+          {pairs.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-fog-400">Load a paired case:</span>
+              {pairs.map((p) => (
+                <Button key={p.id} variant="ghost" onClick={() => loadPair(p.a!, p.b!)}>
+                  {p.a!.title.replace(/ —.*$/, "")} → {p.b!.title.replace(/^.*— /, "")}
+                </Button>
+              ))}
+            </div>
+          )}
 
           <div className="grid gap-5 lg:grid-cols-2">
             <div className="rounded-xl border border-line bg-ink-900/30 p-3.5">
