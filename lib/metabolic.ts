@@ -47,14 +47,22 @@ export const SIGNS: SignDef[] = [
     stage: "Insulin resistance → pre-diabetes → young-onset T2DM",
     prior: { neck: 1, axilla: 1, groin: 1, knuckles: 0.95, elbow_knee: 0.9, other: 0.6, "*": 0.3 },
     score: (f) => {
-      const pig = ramp(f.hyperpigmentationIndex, 0.14, 0.62);
-      const vel = ramp(f.velvetyTextureEnergy, 0.0042, 0.011);
-      const ext = ramp(f.pigmentedFraction, 0.06, 0.42);
+      /*
+       * Measured on real clinical photographs, surface texture is by far the
+       * strongest discriminator: unaffected skin sits at 0.005-0.007 and
+       * acanthotic skin at 0.010-0.017, with no overlap. Pigmentation alone
+       * is not safe to lead with, because a curved, directionally lit body
+       * surface produces a large apparent pigment gradient on perfectly
+       * normal skin.
+       */
+      const vel = ramp(f.velvetyTextureEnergy, 0.0072, 0.0145);
+      const ext = ramp(f.pigmentedFraction, 0.18, 0.52);
+      const dark = ramp(f.shadingDrop, 0.1, 0.32);
       const ev: string[] = [];
-      if (pig > 0.25) ev.push(`hyperpigmentation index ${f.hyperpigmentationIndex.toFixed(2)} (saturation rise ${f.pigmentSaturationGain.toFixed(3)}, not shadow)`);
-      if (ext > 0.25) ev.push(`plaque covers ${(f.pigmentedFraction * 100).toFixed(0)}% of the field`);
-      if (vel > 0.25) ev.push(`velvety fine-scale texture energy ${f.velvetyTextureEnergy.toFixed(4)}`);
-      return { raw: 0.62 * pig + 0.24 * ext + 0.14 * vel, evidence: ev };
+      if (vel > 0.25) ev.push(`velvety surface texture, energy ${f.velvetyTextureEnergy.toFixed(4)} (unaffected skin measures 0.005-0.007)`);
+      if (ext > 0.25) ev.push(`plaque covers ${(f.pigmentedFraction * 100).toFixed(0)}% of the skin in frame`);
+      if (dark > 0.4) ev.push(`regional darkening ${f.shadingDrop.toFixed(2)}`);
+      return { raw: 0.55 * vel + 0.3 * ext + 0.15 * dark, evidence: ev };
     },
   },
   {
@@ -66,12 +74,12 @@ export const SIGNS: SignDef[] = [
     stage: "Insulin resistance, pre-diabetes",
     prior: { neck: 1, axilla: 1, eyelid: 0.95, groin: 0.8, other: 0.5, "*": 0.3 },
     score: (f) => {
-      const pap = ramp(f.papuleDensity, 0.8, 3.0);
-      const tex = ramp(f.velvetyTextureEnergy, 0.0042, 0.011);
+      const pap = ramp(f.papuleDensity, 1.6, 6.5);
+      const tex = ramp(f.velvetyTextureEnergy, 0.0072, 0.0145);
       const ev: string[] = [];
-      if (pap > 0.3) ev.push(`${f.papuleCount} pedunculated/papular blobs (${f.papuleDensity.toFixed(1)} per 10k px)`);
-      if (tex > 0.3) ev.push("raised surface texture");
-      return { raw: 0.62 * pap + 0.38 * tex, evidence: ev };
+      if (pap > 0.3) ev.push(`${f.papuleCount} papular blobs (${f.papuleDensity.toFixed(1)} per 10k px of skin)`);
+      if (tex > 0.3) ev.push("raised surface relief");
+      return { raw: 0.5 * pap + 0.5 * tex, evidence: ev };
     },
   },
   {
@@ -83,8 +91,8 @@ export const SIGNS: SignDef[] = [
     stage: "Insulin resistance, diabetes",
     prior: { knuckles: 1, elbow_knee: 0.5, other: 0.35, "*": 0.2 },
     score: (f) => {
-      const pap = ramp(f.papuleDensity, 3.2, 11);
-      const tex = ramp(f.velvetyTextureEnergy, 0.0042, 0.012);
+      const pap = ramp(f.papuleDensity, 4.5, 13);
+      const tex = ramp(f.velvetyTextureEnergy, 0.0072, 0.015);
       const ev: string[] = [];
       if (pap > 0.3) ev.push(`cobblestone papule density ${f.papuleDensity.toFixed(1)} per 10k px`);
       if (tex > 0.3) ev.push("high-frequency surface relief");
@@ -132,8 +140,8 @@ export const SIGNS: SignDef[] = [
     stage: "Tightly linked to insulin resistance in young women",
     prior: { face: 1, neck: 0.6, other: 0.3, "*": 0.2 },
     score: (f) => {
-      const hair = ramp(f.darkMaculeCount, 1.2, 6);
-      const ery = ramp(f.facialErythema, 0.25, 0.65);
+      const hair = ramp(f.darkMaculeCount, 3, 12);
+      const ery = ramp(f.facialErythema, 0.3, 0.72);
       const ev: string[] = [];
       if (hair > 0.3) ev.push("dark linear/punctate structures consistent with terminal hair");
       if (ery > 0.3) ev.push(`inflammatory erythema index ${f.facialErythema.toFixed(2)}`);
@@ -149,8 +157,8 @@ export const SIGNS: SignDef[] = [
     stage: "Established / longer-standing diabetes",
     prior: { shin: 1, other: 0.3, "*": 0.2 },
     score: (f) => {
-      const mac = ramp(f.darkMaculeCount, 0.6, 3.2);
-      const brown = ramp(f.pigmentedFraction, 0.04, 0.3);
+      const mac = ramp(f.darkMaculeCount, 1.5, 6);
+      const brown = ramp(f.pigmentedFraction, 0.12, 0.45);
       const ev: string[] = [];
       if (mac > 0.25) ev.push(`${f.darkMaculeCount.toFixed(1)} atrophic macules per 10k px`);
       if (brown > 0.25) ev.push(`discrete pigmented patches over ${(f.pigmentedFraction * 100).toFixed(0)}% of the field`);

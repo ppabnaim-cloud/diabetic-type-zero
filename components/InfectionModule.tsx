@@ -128,6 +128,14 @@ export default function InfectionModule() {
           <p className="text-sm text-fog-400">Select an image at Station A first.</p>
         ) : (
           <div className="space-y-5">
+            {verdict?.insufficientBed && (
+              <Note tone="warn">
+                Only {(analysis.comp.bedFractionOfRoi * 100).toFixed(0)}% of the selected region is open
+                wound bed. The percentages below are computed over too few pixels to be trusted — drag the
+                region of interest tightly over the ulcer, or accept that there is no significant wound here.
+              </Note>
+            )}
+
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-fog-400">
@@ -298,6 +306,8 @@ export default function InfectionModule() {
                   : "These are not reflected in the image score but should raise your clinical threshold."}
               </Note>
             )}
+
+            {verdict.tissueLossFlag && <Note tone="warn">{verdict.tissueLossFlag}</Note>}
 
             <Note tone="warn">{verdict.gradeCaveat}</Note>
 

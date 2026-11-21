@@ -1,79 +1,128 @@
 {
-  "version": 1,
-  "note": "Real clinical photographs. Drop a file into /public/demo and add an entry here — no code change is needed. An entry whose file is missing is skipped silently. 'roi' is the suggested region of interest as fractions of the image (x, y from the top-left); omit it to default to the central 72%.",
+  "version": 2,
+  "note": "Real clinical photographs. Drop a file into /public/demo and add an entry here \u2014 no code change is needed. An entry whose file is missing is skipped silently. 'roi' is the suggested region of interest as fractions of the image (x, y measured from the top-left); omit it to default to the central 72%. Provenance and licences are recorded in CREDITS.md.",
   "images": [
     {
       "id": "m1-an-neck",
       "module": "metabolic",
       "file": "m1-acanthosis-neck.jpg",
-      "title": "Acanthosis nigricans — posterior neck",
-      "note": "Velvety hyperpigmented plaque with papillomatous texture",
+      "title": "Acanthosis nigricans \u2014 posterior neck",
+      "note": "Velvety, papillomatous plaque with accentuated skin lines",
       "site": "neck",
-      "roi": { "x": 0.18, "y": 0.5, "w": 0.64, "h": 0.42 },
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "roi": {
+        "x": 0.1,
+        "y": 0.3,
+        "w": 0.78,
+        "h": 0.6
+      }
     },
     {
       "id": "m1-an-neck-2",
       "module": "metabolic",
       "file": "m1-acanthosis-neck-2.jpg",
-      "title": "Acanthosis nigricans — nape, lighter skin",
-      "note": "Brown velvety plaque with accentuated skin lines",
+      "title": "Acanthosis nigricans \u2014 nape",
+      "note": "Brown velvety plaque, lighter skin type",
       "site": "neck",
-      "roi": { "x": 0.2, "y": 0.35, "w": 0.6, "h": 0.45 },
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "roi": {
+        "x": 0.12,
+        "y": 0.18,
+        "w": 0.72,
+        "h": 0.64
+      }
     },
     {
       "id": "m1-an-axilla",
       "module": "metabolic",
       "file": "m1-acanthosis-axilla.jpg",
-      "title": "Acanthosis nigricans — axilla",
-      "note": "Velvety hyperpigmentation of the axillary fold",
+      "title": "Acanthosis nigricans \u2014 axilla (subtle)",
+      "note": "Low-contrast velvety hyperpigmentation of the axillary fold",
       "site": "axilla",
-      "roi": { "x": 0.22, "y": 0.3, "w": 0.52, "h": 0.45 },
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "roi": {
+        "x": 0.2,
+        "y": 0.3,
+        "w": 0.6,
+        "h": 0.55
+      }
     },
     {
       "id": "m1-tags-neck",
       "module": "metabolic",
       "file": "m1-skin-tags-neck.jpg",
-      "title": "Acrochordons — lateral neck",
+      "title": "Acrochordons \u2014 lateral neck",
       "note": "Multiple pedunculated papules",
       "site": "neck",
-      "roi": { "x": 0.25, "y": 0.42, "w": 0.6, "h": 0.42 },
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "roi": {
+        "x": 0.12,
+        "y": 0.3,
+        "w": 0.76,
+        "h": 0.6
+      }
     },
     {
       "id": "m1-normal",
       "module": "metabolic",
       "file": "m1-normal-skin.jpg",
-      "title": "Normal skin — negative control",
-      "note": "No Tier 1 features; use to demonstrate specificity",
+      "title": "Unaffected skin \u2014 negative control",
+      "note": "Same patient, away from the lesion. Use to demonstrate specificity",
       "site": "neck",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "roi": {
+        "x": 0.15,
+        "y": 0.2,
+        "w": 0.7,
+        "h": 0.6
+      }
     },
     {
-      "id": "m2-infected",
+      "id": "m2-necrotic",
       "module": "infection",
-      "file": "m2-dfu-infected.jpg",
-      "title": "Infected diabetic foot ulcer",
-      "note": "Purulent discharge with surrounding erythema",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "file": "m2-dfu-necrotic.jpg",
+      "title": "Necrotic diabetic foot ulcer with peri-wound erythema",
+      "note": "Extensive eschar along the lateral border, surrounding inflammation",
+      "roi": {
+        "x": 0.08,
+        "y": 0.48,
+        "w": 0.46,
+        "h": 0.48
+      }
     },
     {
       "id": "m2-gangrene",
       "module": "infection",
       "file": "m2-dfu-gangrene.jpg",
-      "title": "Wet gangrene — forefoot",
-      "note": "Dusky, malodorous, limb-threatening appearance",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "title": "Dry gangrene \u2014 fourth toe",
+      "note": "Demarcated black necrotic digit",
+      "roi": {
+        "x": 0.18,
+        "y": 0.1,
+        "w": 0.6,
+        "h": 0.7
+      }
+    },
+    {
+      "id": "m2-granulating",
+      "module": "infection",
+      "file": "m2-dfu-granulating.jpg",
+      "title": "Neuropathic heel ulcer \u2014 granulating",
+      "note": "Clean red base, no purulence",
+      "roi": {
+        "x": 0.6,
+        "y": 0.33,
+        "w": 0.19,
+        "h": 0.24
+      }
     },
     {
       "id": "m2-clean",
       "module": "infection",
       "file": "m2-dfu-clean.jpg",
-      "title": "Non-infected ulcer — negative control",
-      "note": "Clean granulating bed, calm peri-wound skin",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "title": "Clean granulating bed \u2014 negative control",
+      "note": "Post-debridement, beefy-red granulation throughout",
+      "roi": {
+        "x": 0.18,
+        "y": 0.1,
+        "w": 0.64,
+        "h": 0.8
+      }
     },
     {
       "id": "m3-v1",
@@ -81,9 +130,14 @@
       "slot": "A",
       "pairId": "case-1",
       "file": "m3-visit1.jpg",
-      "title": "Visit 1 — baseline",
-      "note": "Same ulcer, first photograph",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "title": "Visit 1 \u2014 post-debridement",
+      "note": "Large granulating defect",
+      "roi": {
+        "x": 0.18,
+        "y": 0.1,
+        "w": 0.64,
+        "h": 0.8
+      }
     },
     {
       "id": "m3-v2",
@@ -91,9 +145,14 @@
       "slot": "B",
       "pairId": "case-1",
       "file": "m3-visit2.jpg",
-      "title": "Visit 2 — follow-up",
-      "note": "Same ulcer after treatment",
-      "credit": "Third-party clinical photograph — see CREDITS.md"
+      "title": "Visit 2 \u2014 follow-up",
+      "note": "Same foot, wound substantially reduced",
+      "roi": {
+        "x": 0.18,
+        "y": 0.1,
+        "w": 0.64,
+        "h": 0.8
+      }
     }
   ]
 }
