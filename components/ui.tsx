@@ -103,7 +103,7 @@ export function Station({
         ? "bg-brand-500/15 text-brand-300 border-brand-500/50"
         : "bg-ink-700 text-fog-400 border-line";
   return (
-    <section id={id} className={cx("panel scroll-mt-24 transition-colors", ring, state === "locked" && "opacity-55")}>
+    <section id={id} className={cx("panel scroll-mt-40 transition-colors", ring, state === "locked" && "opacity-55")}>
       <header className="flex items-start gap-3 border-b border-line px-4 py-3.5 sm:px-5">
         <span
           className={cx(

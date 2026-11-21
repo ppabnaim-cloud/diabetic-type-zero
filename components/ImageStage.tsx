@@ -208,9 +208,12 @@ export default function ImageStage({
 
       {src ? (
         <div className="space-y-2.5">
+          <div className="flex justify-center overflow-hidden rounded-xl border border-line bg-ink-900">
+          {/* The wrapper shrinks to the rendered image so ROI fractions map to
+              image coordinates, not to a letterboxed container. */}
           <div
             ref={boxRef}
-            className="relative select-none overflow-hidden rounded-xl border border-line bg-ink-900 touch-none"
+            className="relative inline-block select-none touch-none"
             onPointerDown={(e) => {
               (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
               const p = pointTo(e);
@@ -231,7 +234,7 @@ export default function ImageStage({
             <img
               src={src}
               alt="Selected clinical image"
-              className={cx("block w-full object-contain", compact ? "max-h-64" : "max-h-[22rem]")}
+              className={cx("block h-auto w-auto max-w-full", compact ? "max-h-64" : "max-h-[22rem]")}
               draggable={false}
             />
             {(() => {
@@ -257,6 +260,7 @@ export default function ImageStage({
                 </>
               );
             })()}
+          </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <p className="flex-1 text-[11px] text-fog-400">
