@@ -113,7 +113,7 @@ export default function InfectionModule() {
             }
           />
         ) : (
-          <p className="text-sm text-fog-400">Select an image at Station A first.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Select an image at Station A first."}</p>
         )}
       </Station>
 
@@ -125,7 +125,7 @@ export default function InfectionModule() {
         id="m2-c"
       >
         {!analysis ? (
-          <p className="text-sm text-fog-400">Select an image at Station A first.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Select an image at Station A first."}</p>
         ) : (
           <div className="space-y-5">
             {verdict?.insufficientBed && (
@@ -245,7 +245,7 @@ export default function InfectionModule() {
         id="m2-d"
       >
         {!verdict || !analysis ? (
-          <p className="text-sm text-fog-400">Complete Stations A–C to see the result.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Complete Stations A–C to see the result."}</p>
         ) : (
           <div className="space-y-4">
             <div

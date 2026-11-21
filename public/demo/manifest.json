@@ -105,10 +105,10 @@
       "title": "Neuropathic heel ulcer \u2014 granulating",
       "note": "Clean red base, no purulence",
       "roi": {
-        "x": 0.6,
+        "x": 0.47,
         "y": 0.33,
-        "w": 0.19,
-        "h": 0.24
+        "w": 0.18,
+        "h": 0.18
       }
     },
     {

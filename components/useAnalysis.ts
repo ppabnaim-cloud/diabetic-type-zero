@@ -34,6 +34,10 @@ export function useAnalysis(src: string | null, roi: Roi, withFeatures = true): 
     setPreparing(true);
     setError(null);
     setCnn(null);
+    // Drop the previous image's results immediately. Otherwise the interface
+    // shows one image's tissue percentages beside another image's verdict for
+    // as long as decoding takes — which is exactly when someone is watching.
+    setAnalysis(null);
     prepare(src)
       .then((p) => {
         if (!alive) return;
@@ -56,7 +60,10 @@ export function useAnalysis(src: string | null, roi: Roi, withFeatures = true): 
   }, [src]);
 
   useEffect(() => {
-    if (!prepared) {
+    // Guard against computing on a stale decode: `prepared` lags `src` by one
+    // async hop, so without this the new region of interest is briefly applied
+    // to the previous image.
+    if (!prepared || prepared.src !== src) {
       setAnalysis(null);
       return;
     }
@@ -65,7 +72,7 @@ export function useAnalysis(src: string | null, roi: Roi, withFeatures = true): 
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed");
     }
-  }, [prepared, roi, withFeatures]);
+  }, [prepared, src, roi, withFeatures]);
 
   return { prepared, analysis, cnn, cnnRunning, preparing, error };
 }

@@ -95,7 +95,7 @@ export default function MetabolicModule() {
         {src ? (
           <CnnPanel cnn={cnn} running={cnnRunning || preparing} analyserMs={analysis?.elapsedMs} />
         ) : (
-          <p className="text-sm text-fog-400">Select an image at Station A first.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Select an image at Station A first."}</p>
         )}
       </Station>
 
@@ -107,7 +107,7 @@ export default function MetabolicModule() {
         id="m1-c"
       >
         {!analysis ? (
-          <p className="text-sm text-fog-400">Select an image at Station A first.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Select an image at Station A first."}</p>
         ) : (
           <div className="space-y-5">
             <div className="grid gap-3 sm:grid-cols-2">
@@ -308,7 +308,7 @@ export default function MetabolicModule() {
         id="m1-d"
       >
         {!verdict ? (
-          <p className="text-sm text-fog-400">Complete Stations A–C to see the result.</p>
+          <p className="text-sm text-fog-400">{src ? "Analysing…" : "Complete Stations A–C to see the result."}</p>
         ) : (
           <div className="space-y-4">
             <div
